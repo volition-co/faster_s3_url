@@ -38,6 +38,7 @@ module FasterS3Url
           bucket_name: options[:bucket],
           access_key_id: options[:access_key_id],
           secret_access_key: options[:secret_access_key],
+          credentials: options[:credentials],
           region: options[:region],
           host: host)
 

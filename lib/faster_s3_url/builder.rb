@@ -20,7 +20,7 @@ module FasterS3Url
 
     MAX_CACHED_SIGNING_KEYS = 5
 
-    attr_reader :bucket_name, :region, :host, :access_key_id
+    attr_reader :bucket_name, :region, :host
 
     # @option params [String] :bucket_name required
     #
@@ -38,13 +38,19 @@ module FasterS3Url
     #   be cached and re-used, improving performance when generating mulitple presigned urls with a single Builder by around 50%.
     #   NOTE WELL: This will make the Builder no longer technically concurrency-safe for sharing between multiple threads, is one
     #   reason it is not on by default.
-    def initialize(bucket_name:, region:, access_key_id:, secret_access_key:, host:nil, default_public: true, cache_signing_keys: false)
+    def initialize(bucket_name:, region:, access_key_id:, secret_access_key:, credentials:, host:nil, default_public: true, cache_signing_keys: false)
       @bucket_name = bucket_name
       @region = region
       @host = host || default_host(bucket_name)
       @default_public = default_public
-      @access_key_id = access_key_id
-      @secret_access_key = secret_access_key
+
+      if credentials
+        @credentials = credentials
+      else
+        @access_key_id = access_key_id
+        @secret_access_key = secret_access_key
+      end
+
       @cache_signing_keys = cache_signing_keys
       if @cache_signing_keys
         @signing_key_cache = {}
@@ -105,7 +111,7 @@ module FasterS3Url
 
       canonical_query_string_parts = [
           "X-Amz-Algorithm=#{ALGORITHM}",
-          "X-Amz-Credential=" + uri_escape(@access_key_id + "/" + credential_scope),
+          "X-Amz-Credential=" + uri_escape(access_key_id + "/" + credential_scope),
           "X-Amz-Date=" + amz_date,
           "X-Amz-Expires=" + expires_in.to_s,
           "X-Amz-SignedHeaders=" + SIGNED_HEADERS,
@@ -178,11 +184,26 @@ module FasterS3Url
       end
     end
 
+    def access_key_id
+      if @credentials
+        @credentials.access_key_id
+      else
+        @access_key_id
+      end
+    end
 
     private
 
+    def secret_access_key
+      if @credentials
+        @credentials.secret_access_key
+      else
+        @secret_access_key
+      end
+    end
+
     def make_signing_key(datestamp)
-      aws_get_signature_key(@secret_access_key, datestamp, @region, SERVICE)
+      aws_get_signature_key(secret_access_key, datestamp, @region, SERVICE)
     end
 
     # If caching of signing keys is turned on, use and cache signing key, while
