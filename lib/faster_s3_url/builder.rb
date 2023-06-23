@@ -38,7 +38,7 @@ module FasterS3Url
     #   be cached and re-used, improving performance when generating mulitple presigned urls with a single Builder by around 50%.
     #   NOTE WELL: This will make the Builder no longer technically concurrency-safe for sharing between multiple threads, is one
     #   reason it is not on by default.
-    def initialize(bucket_name:, region:, access_key_id:, secret_access_key:, credentials:, host:nil, default_public: true, cache_signing_keys: false)
+    def initialize(bucket_name:, region:, access_key_id:, secret_access_key:, credentials:nil, host:nil, default_public: true, cache_signing_keys: false)
       @bucket_name = bucket_name
       @region = region
       @host = host || default_host(bucket_name)
