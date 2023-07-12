@@ -45,7 +45,7 @@ module FasterS3Url
       @default_public = default_public
 
       if credentials
-        @credentials = credentials
+        @credentials_provider = credentials
       else
         @access_key_id = access_key_id
         @secret_access_key = secret_access_key
@@ -185,8 +185,8 @@ module FasterS3Url
     end
 
     def access_key_id
-      if @credentials
-        @credentials.access_key_id
+      if @credentials_provider
+        @credentials_provider.credentials.access_key_id
       else
         @access_key_id
       end
@@ -195,8 +195,8 @@ module FasterS3Url
     private
 
     def secret_access_key
-      if @credentials
-        @credentials.secret_access_key
+      if @credentials_provider
+        @credentials_provider.credentials.secret_access_key
       else
         @secret_access_key
       end
